@@ -1,6 +1,7 @@
 package com.example.db_task.data.local.database
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -31,7 +32,7 @@ import com.example.db_task.data.local.entity.TaskWithProjects
         User::class,
         Attachment::class,
         TaskProjectRelation::class,
-        ], version = 3)
+        ], version = 4,)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun projectDao(): ProjectDao

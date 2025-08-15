@@ -15,7 +15,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.lifecycleScope
+import androidx.sqlite.db.SimpleSQLiteQuery
 import com.example.db_task.data.local.dao.AttachmentDao
+import com.example.db_task.data.local.dao.ProjectDao
 import com.example.db_task.data.local.database.AppDatabase
 import com.example.db_task.data.local.entity.Attachment
 import com.example.db_task.data.local.entity.Project
@@ -32,6 +34,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         AppDatabase.createDataBase(context = applicationContext)
+
+
+
 
         lifecycleScope.launch {
 
@@ -90,4 +95,33 @@ suspend fun getProjectWithTasks() {
 suspend fun susProjects() {
     val projects = AppDatabase.db?.projectDao()?.getAllProjectsOnce()
     projects?.forEach { project -> Log.d("DB_TEST",project.toString()) }
+}
+
+fun measurePerformance(dao: ProjectDao) {
+    var totalRoomTime = 0L
+    repeat(100) {
+        val start = System.nanoTime()
+        dao.getProjectsWithMoreThanThreeTasks()
+        val end = System.nanoTime()
+        totalRoomTime += (end - start)
+    }
+    Log.d("PERF", "Room query: ${totalRoomTime}ns")
+
+    val sql = """
+        SELECT p.* 
+        FROM projects AS p
+        JOIN tasks AS t ON p.id = t.projectId
+        GROUP BY p.id
+        HAVING COUNT(t.id) > 3
+    """.trimIndent()
+    val rawQuery = SimpleSQLiteQuery(sql)
+
+    var totalRawTime = 0L
+    repeat(100) {
+        val start = System.nanoTime()
+        dao.getProjectsWithRawQuery(rawQuery)
+        val end = System.nanoTime()
+        totalRawTime += (end - start)
+    }
+    Log.d("PERF", "Raw query: ${totalRawTime}ns")
 }

@@ -39,12 +39,14 @@ interface ProjectDao {
     fun getAllProjects(): LiveData<List<Project>>
 
     @Query("""
-        SELECT p.* FROM projects p
-        JOIN tasks t ON p.id = t.projectId
-        GROUP BY p.id
-        HAVING COUNT(t.id) > 3
-    """)
+    SELECT p.* 
+    FROM projects AS p
+    JOIN tasks AS t ON p.id = t.projectId
+    GROUP BY p.id
+    HAVING COUNT(t.id) > 3
+""")
     fun getProjectsWithMoreThanThreeTasks(): List<Project>
+
 
     @RawQuery
     fun getProjectsWithRawQuery(query: SupportSQLiteQuery): List<Project>
